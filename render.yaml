@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: stick-soccer
+    runtime: static
+    staticPublishPath: .
+    buildCommand: ""
