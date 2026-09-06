@@ -147,7 +147,7 @@ export class Game {
     if (input.wasPressed('f') && p.isHero && p.meter >= 100) {
       doSpecialKick(p, this.ball, facing, this.particles);
     } else if (input.wasPressed('shift')) {
-      const mate = pickPassTarget(p, this.teamA, this.ball);
+      const mate = pickPassTarget(p, this.teamA, this.teamB, this.ball);
       if (mate) {
         const dir = new THREE.Vector3(mate.position.x - p.position.x, 0, mate.position.z - p.position.z).normalize();
         doNormalKick(p, this.ball, dir, 11.5, 2.2, this.particles);
@@ -277,8 +277,8 @@ export class Game {
 
     this.autoSwitchControl();
     this.handleControlledInput();
-    updateTeamAI(this.teamA, this.ball, { controlledPlayer: this.controlled, particles: this.particles });
-    updateTeamAI(this.teamB, this.ball, { controlledPlayer: null, particles: this.particles });
+    updateTeamAI(this.teamA, this.teamB, this.ball, { controlledPlayer: this.controlled, particles: this.particles });
+    updateTeamAI(this.teamB, this.teamA, this.ball, { controlledPlayer: null, particles: this.particles });
 
     for (const p of [...this.teamA.players, ...this.teamB.players]) p.update(dt);
     this.resolvePlayerPlayerCollisions();

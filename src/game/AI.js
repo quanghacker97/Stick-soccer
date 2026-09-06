@@ -1,17 +1,20 @@
 import * as THREE from 'three';
-import { FIELD_WIDTH, GOAL_WIDTH } from './constants.js';
+import { FIELD_WIDTH, FIELD_LENGTH, GOAL_WIDTH } from './constants.js';
 import { canKick, doNormalKick, doSpecialKick } from './Kicking.js';
 
 const _v = new THREE.Vector3();
 const _goal = new THREE.Vector3();
 const _target = new THREE.Vector3();
+const _sep = new THREE.Vector3();
 
 function distXZ(a, b) {
   return Math.hypot(a.x - b.x, a.z - b.z);
 }
 
-export function updateTeamAI(team, ball, { controlledPlayer, particles }) {
+export function updateTeamAI(team, opponentTeam, ball, { controlledPlayer, particles }) {
   const outfield = team.players.filter((p) => p.role !== 'GK');
+  const hasPossession = !!(ball.lastTouch && ball.lastTouch.team === team.side);
+
   let chaser;
   if (ball.intendedReceiver && outfield.includes(ball.intendedReceiver)) {
     // a teammate just passed to this player — they alone should run onto it,
@@ -35,9 +38,9 @@ export function updateTeamAI(team, ball, { controlledPlayer, particles }) {
     }
 
     if (player === chaser) {
-      chaserAI(player, team, ball, particles);
+      chaserAI(player, team, opponentTeam, ball, particles);
     } else {
-      supportAI(player, team, ball);
+      supportAI(player, team, ball, hasPossession);
     }
   }
 }
@@ -61,7 +64,7 @@ function goalkeeperAI(player, team, ball, particles) {
   }
 }
 
-export function pickPassTarget(player, team, ball) {
+export function pickPassTarget(player, team, opponentTeam, ball) {
   let best = null;
   let bestScore = -Infinity;
   for (const mate of team.players) {
@@ -69,13 +72,19 @@ export function pickPassTarget(player, team, ball) {
     const advance = (mate.position.z - player.position.z) * team.attackDir;
     const dist = distXZ(mate.position, player.position);
     if (dist > 24 || dist < 2) continue;
-    const score = advance - dist * 0.3;
+    let openness = 8;
+    if (opponentTeam) {
+      openness = Infinity;
+      for (const opp of opponentTeam.players) openness = Math.min(openness, distXZ(mate.position, opp.position));
+      openness = Math.min(openness, 8);
+    }
+    const score = advance - dist * 0.3 + openness * 0.9;
     if (score > bestScore) { bestScore = score; best = mate; }
   }
   return best;
 }
 
-function chaserAI(player, team, ball, particles) {
+function chaserAI(player, team, opponentTeam, ball, particles) {
   const toBall = _v.set(ball.position.x - player.position.x, 0, ball.position.z - player.position.z);
   const dist = toBall.length();
   player.desiredDir.copy(dist > 0.2 ? toBall.clone().normalize() : new THREE.Vector3());
@@ -105,7 +114,7 @@ function chaserAI(player, team, ball, particles) {
     return;
   }
 
-  const mate = pickPassTarget(player, team, ball);
+  const mate = pickPassTarget(player, team, opponentTeam, ball);
   if (mate && Math.random() < 0.55) {
     const dir = new THREE.Vector3(mate.position.x - player.position.x, 0, mate.position.z - player.position.z).normalize();
     doNormalKick(player, ball, dir, 11.5, 2.2, particles);
@@ -120,22 +129,44 @@ function chaserAI(player, team, ball, particles) {
   doNormalKick(player, ball, dir, 7, 1.4, particles);
 }
 
-function supportAI(player, team, ball) {
+function supportAI(player, team, ball, hasPossession) {
   // Keep a disciplined shape: drift toward the ball's side a little rather
-  // than everyone collapsing onto it, and stay within a bounded distance of
-  // this player's own formation slot so lines (defense/mid/attack) hold up.
+  // than everyone collapsing onto it, and push the whole line up when this
+  // team has the ball or drop it back when defending — an attacking vs.
+  // defensive posture, not a static formation.
   const shiftX = 0.22;
   const shiftZ = 0.16;
   const maxDrift = 7;
+  const posture = (hasPossession ? 4.5 : -3.5) * team.attackDir;
+
   const targetX = THREE.MathUtils.clamp(
     player.formationSlot.x + (ball.position.x - player.formationSlot.x) * shiftX,
     -FIELD_WIDTH / 2 + 1.5, FIELD_WIDTH / 2 - 1.5,
   );
   const zDrift = THREE.MathUtils.clamp((ball.position.z - player.formationSlot.y) * shiftZ, -maxDrift, maxDrift);
-  const targetZ = player.formationSlot.y + zDrift;
+  const targetZ = THREE.MathUtils.clamp(
+    player.formationSlot.y + zDrift + posture,
+    -FIELD_LENGTH / 2 + 3, FIELD_LENGTH / 2 - 3,
+  );
   _target.set(targetX, 0, targetZ);
 
+  // Spread apart from teammates who are also holding shape nearby, so the
+  // team doesn't bunch into a single clump.
+  _sep.set(0, 0, 0);
+  for (const mate of team.players) {
+    if (mate === player || mate.role === 'GK') continue;
+    const dx = player.position.x - mate.position.x;
+    const dz = player.position.z - mate.position.z;
+    const d = Math.hypot(dx, dz);
+    if (d > 0.01 && d < 5.5) {
+      const strength = (5.5 - d) / 5.5;
+      _sep.x += (dx / d) * strength;
+      _sep.z += (dz / d) * strength;
+    }
+  }
+
   const toTarget = _v.set(_target.x - player.position.x, 0, _target.z - player.position.z);
+  toTarget.addScaledVector(_sep, 2.2);
   const dist = toTarget.length();
   if (dist > 0.4) {
     player.desiredDir.copy(toTarget.normalize().multiplyScalar(Math.min(0.65, dist / 3)));

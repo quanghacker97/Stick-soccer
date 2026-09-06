@@ -8,7 +8,8 @@ function buildBody(jerseyColor, skinColor, headbandColor) {
   const group = new THREE.Group();
 
   const jerseyMat = new THREE.MeshStandardMaterial({ color: jerseyColor, roughness: 0.7 });
-  const shortsMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.8 });
+  const shortsMat = new THREE.MeshStandardMaterial({ color: 0xf2f2f2, roughness: 0.8 });
+  const shoeMat = new THREE.MeshStandardMaterial({ color: 0x181818, roughness: 0.5 });
   const skinMat = new THREE.MeshStandardMaterial({ color: skinColor, roughness: 0.6 });
 
   const torso = new THREE.Mesh(new THREE.CapsuleGeometry(0.26, 0.5, 4, 8), jerseyMat);
@@ -19,12 +20,12 @@ function buildBody(jerseyColor, skinColor, headbandColor) {
   hips.position.y = 0.75;
   group.add(hips);
 
-  const head = new THREE.Mesh(new THREE.SphereGeometry(0.22, 14, 12), skinMat);
-  head.position.y = 1.62;
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.26, 16, 14), skinMat);
+  head.position.y = 1.66;
   group.add(head);
 
-  const band = new THREE.Mesh(new THREE.TorusGeometry(0.225, 0.04, 6, 12), new THREE.MeshStandardMaterial({ color: headbandColor }));
-  band.position.y = 1.64;
+  const band = new THREE.Mesh(new THREE.TorusGeometry(0.265, 0.045, 6, 12), new THREE.MeshStandardMaterial({ color: headbandColor }));
+  band.position.y = 1.68;
   band.rotation.x = Math.PI / 2;
   group.add(band);
 
@@ -42,11 +43,20 @@ function buildBody(jerseyColor, skinColor, headbandColor) {
   armR.position.set(0.32, 1.32, 0);
   group.add(armL, armR);
 
-  const legL = limb(0.62, 0.12, 0x222222);
-  legL.position.set(-0.14, 0.64, 0);
-  const legR = limb(0.62, 0.12, 0x222222);
-  legR.position.set(0.14, 0.64, 0);
+  // pivot sits at leg length + 2*radius so the capsule's bottom (the foot)
+  // lands right at y=0 instead of floating above or sinking into the pitch.
+  const legLen = 0.5, legRadius = 0.12;
+  const legL = limb(legLen, legRadius, jerseyColor);
+  legL.position.set(-0.14, legLen + legRadius * 2, 0);
+  const legR = limb(legLen, legRadius, jerseyColor);
+  legR.position.set(0.14, legLen + legRadius * 2, 0);
   group.add(legL, legR);
+
+  for (const leg of [legL, legR]) {
+    const shoe = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.1, 0.26), shoeMat);
+    shoe.position.set(0, -(legLen + legRadius * 2) + 0.06, 0.04);
+    leg.add(shoe);
+  }
 
   const glow = new THREE.Mesh(
     new THREE.SphereGeometry(0.75, 12, 10),

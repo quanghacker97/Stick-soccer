@@ -4,8 +4,44 @@ import {
   PENALTY_DEPTH, PENALTY_WIDTH,
 } from './constants.js';
 
+function buildSky(scene) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 2; canvas.height = 256;
+  const ctx = canvas.getContext('2d');
+  const grad = ctx.createLinearGradient(0, 0, 0, 256);
+  grad.addColorStop(0, '#3e86d6');
+  grad.addColorStop(0.55, '#8fd0ff');
+  grad.addColorStop(1, '#e8f6ff');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 2, 256);
+  const tex = new THREE.CanvasTexture(canvas);
+  const geo = new THREE.SphereGeometry(150, 20, 20);
+  const mat = new THREE.MeshBasicMaterial({ map: tex, side: THREE.BackSide, fog: false });
+  const mesh = new THREE.Mesh(geo, mat);
+  scene.add(mesh);
+}
+
+function buildCrowdTexture() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 128; canvas.height = 32;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#25242b';
+  ctx.fillRect(0, 0, 128, 32);
+  const colors = ['#e74c3c', '#f1c40f', '#3498db', '#ecf0f1', '#2ecc71', '#e67e22'];
+  for (let y = 2; y < 32; y += 4) {
+    for (let x = 0; x < 128; x += 4) {
+      ctx.fillStyle = colors[(Math.random() * colors.length) | 0];
+      ctx.fillRect(x + Math.random() * 1.5, y + Math.random() * 1.5, 2.4, 2.6);
+    }
+  }
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = THREE.RepeatWrapping;
+  tex.wrapT = THREE.RepeatWrapping;
+  return tex;
+}
+
 function buildPitchTexture() {
-  const res = 4; // px per world unit
+  const res = 6; // px per world unit
   const w = Math.ceil(FIELD_WIDTH * res) + 40;
   const h = Math.ceil(FIELD_LENGTH * res) + 40;
   const canvas = document.createElement('canvas');
@@ -114,21 +150,27 @@ function buildGoal(scene, zSide) {
 function buildStands(scene) {
   const group = new THREE.Group();
   const mat = new THREE.MeshStandardMaterial({ color: 0x5b4a36, roughness: 0.9 });
-  const seatMat = new THREE.MeshStandardMaterial({ color: 0x8a5a3a, roughness: 0.9 });
+  const crowdTex = buildCrowdTexture();
   const margin = 6;
 
   for (const isSide of [true, false]) {
     for (const sign of [-1, 1]) {
       const len = isSide ? FIELD_LENGTH + margin * 2 : FIELD_WIDTH + margin * 2;
       const stand = new THREE.Mesh(new THREE.BoxGeometry(isSide ? 4 : len, 5, isSide ? len : 4), mat);
-      const seats = new THREE.Mesh(new THREE.BoxGeometry(isSide ? 3.6 : len - 1, 1, isSide ? len - 1 : 3.6), seatMat);
+
+      const tex = crowdTex.clone();
+      tex.needsUpdate = true;
+      tex.repeat.set((len - 1) / 6, 1);
+      const seatMat = new THREE.MeshStandardMaterial({ map: tex, roughness: 1 });
+      const seats = new THREE.Mesh(new THREE.BoxGeometry(isSide ? 3.6 : len - 1, 2.4, isSide ? len - 1 : 3.6), seatMat);
+
       const dist = (isSide ? FIELD_WIDTH : FIELD_LENGTH) / 2 + margin + 3;
       if (isSide) {
         stand.position.set(sign * dist, 2.5, 0);
-        seats.position.set(sign * dist, 5.2, 0);
+        seats.position.set(sign * dist, 5.7, 0);
       } else {
         stand.position.set(0, 2.5, sign * dist);
-        seats.position.set(0, 5.2, sign * dist);
+        seats.position.set(0, 5.7, sign * dist);
       }
       group.add(stand, seats);
     }
@@ -165,17 +207,17 @@ export function createField(scene) {
   buildGoal(scene, -1);
   buildGoal(scene, 1);
   buildStands(scene);
+  buildSky(scene);
   buildPagoda(scene, -(FIELD_WIDTH / 2 + 16), -(FIELD_LENGTH / 2 + 10));
   buildPagoda(scene, FIELD_WIDTH / 2 + 16, FIELD_LENGTH / 2 + 10);
 
-  const hemi = new THREE.HemisphereLight(0xbfe3ff, 0x3f9142, 0.9);
+  const hemi = new THREE.HemisphereLight(0xcfe9ff, 0x3f9142, 1.0);
   scene.add(hemi);
-  const sun = new THREE.DirectionalLight(0xffffff, 1.4);
+  const sun = new THREE.DirectionalLight(0xfff6e0, 1.5);
   sun.position.set(20, 30, 10);
   scene.add(sun);
-  const fillLight = new THREE.AmbientLight(0xffffff, 0.25);
+  const fillLight = new THREE.AmbientLight(0xffffff, 0.3);
   scene.add(fillLight);
 
-  scene.background = new THREE.Color(0x8fd0ff);
-  scene.fog = new THREE.Fog(0x8fd0ff, 60, 130);
+  scene.fog = new THREE.Fog(0xcfe9ff, 70, 140);
 }
