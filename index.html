@@ -3,50 +3,45 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Đội Bóng Thiếu Lâm Người Que</title>
-<link rel="stylesheet" href="style.css">
+<title>Đội Bóng Thiếu Lâm Người Que 3D</title>
+<link rel="stylesheet" href="/src/style.css">
 </head>
 <body>
 <div id="app">
-  <canvas id="game" width="960" height="540"></canvas>
+  <canvas id="game"></canvas>
 
   <div id="hud" class="hidden">
     <div class="hud-row">
       <div class="score-box">
-        <span id="p1-name">P1</span>
-        <span id="p1-score">0</span>
+        <span id="team-a-name">ĐỘI A</span>
+        <span id="team-a-score">0</span>
         <span class="dash">-</span>
-        <span id="p2-score">0</span>
-        <span id="p2-name">P2</span>
+        <span id="team-b-score">0</span>
+        <span id="team-b-name">ĐỘI B</span>
       </div>
-      <div id="timer">02:00</div>
+      <div id="timer">10:00</div>
     </div>
     <div class="meter-row">
       <div class="meter" id="meter1"><div class="meter-fill" id="meter1-fill"></div><span class="meter-label">CHIÊU</span></div>
-      <div class="meter" id="meter2"><div class="meter-fill" id="meter2-fill"></div><span class="meter-label">CHIÊU</span></div>
     </div>
+    <div class="switch-hint">TAB đổi cầu thủ · WASD di chuyển · Space sút · Shift chuyền · F xuất chiêu</div>
   </div>
 
   <div id="goal-banner" class="hidden">VÀO!!!</div>
 
   <div id="overlay-menu" class="overlay">
-    <h1>ĐỘI BÓNG THIẾU LÂM<br><span class="sub">NGƯỜI QUE</span></h1>
-    <p class="tagline">Luyện thành tuyệt kỹ, ghi bàn bằng công phu thượng thừa!</p>
-    <div class="mode-select">
-      <button class="mode-btn active" data-mode="ai">1 Người (đấu AI)</button>
-      <button class="mode-btn" data-mode="2p">2 Người (cùng máy)</button>
-    </div>
+    <h1>ĐỘI BÓNG THIẾU LÂM<br><span class="sub">NGƯỜI QUE 3D</span></h1>
+    <p class="tagline">Cả đội xuất trận — luyện thành tuyệt kỹ, chinh phục sân cỏ!</p>
     <button id="btn-to-select" class="primary-btn">TIẾP TỤC</button>
     <div class="controls-hint">
-      <div><b>P1:</b> A/D di chuyển · W nhảy · J sút · K xuất chiêu</div>
-      <div id="p2-hint"><b>P2 (AI):</b> tự động thi triển võ công</div>
+      <div><b>Di chuyển:</b> W/A/S/D &nbsp; <b>Sút:</b> Space &nbsp; <b>Chuyền:</b> Shift &nbsp; <b>Chiêu:</b> F &nbsp; <b>Đổi người:</b> Tab</div>
     </div>
   </div>
 
   <div id="overlay-select" class="overlay hidden">
-    <h2 id="select-title">NGƯỜI CHƠI 1 — CHỌN CAO THỦ</h2>
+    <h2>CHỌN CAO THỦ DẪN DẮT ĐỘI BÓNG</h2>
     <div id="char-grid" class="char-grid"></div>
-    <button id="btn-confirm-select" class="primary-btn" disabled>CHỌN</button>
+    <button id="btn-confirm-select" class="primary-btn" disabled>VÀO SÂN</button>
   </div>
 
   <div id="overlay-gameover" class="overlay hidden">
@@ -55,6 +50,6 @@
     <button id="btn-restart" class="primary-btn">CHƠI LẠI</button>
   </div>
 </div>
-<script src="js/game.js"></script>
+<script type="module" src="/src/main.js"></script>
 </body>
 </html>
