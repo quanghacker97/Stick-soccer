@@ -133,16 +133,11 @@ export class Game {
     this.controlled = best;
   }
 
-  handleControlledInput(dt) {
+  handleControlledInput() {
     const p = this.controlled;
     const input = this.input;
-    let mx = 0, mz = 0;
-    if (input.isDown('w')) mz -= 1;
-    if (input.isDown('s')) mz += 1;
-    if (input.isDown('a')) mx -= 1;
-    if (input.isDown('d')) mx += 1;
-    p.desiredDir.set(mx, 0, mz);
-    if (p.desiredDir.lengthSq() > 1) p.desiredDir.normalize();
+    const move = input.getMoveVector();
+    p.desiredDir.set(move.x, 0, move.z);
 
     if (input.wasPressed('tab')) this.cycleControl();
 
@@ -251,7 +246,7 @@ export class Game {
     }
 
     this.autoSwitchControl();
-    this.handleControlledInput(dt);
+    this.handleControlledInput();
     updateTeamAI(this.teamA, this.ball, { controlledPlayer: this.controlled, particles: this.particles });
     updateTeamAI(this.teamB, this.ball, { controlledPlayer: null, particles: this.particles });
 

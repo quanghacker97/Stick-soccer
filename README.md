@@ -7,12 +7,18 @@ thanh năng lượng đầy. Dựng bằng [Three.js](https://threejs.org) + Vit
 
 ## Cách chơi
 
+**Bàn phím (desktop):**
 - **Di chuyển:** W/A/S/D
 - **Sút bóng:** Space (sút theo hướng đang di chuyển/nhìn)
 - **Chuyền bóng:** Shift (tự nhắm đồng đội ở vị trí tốt phía trên)
 - **Xuất chiêu:** F (chỉ dùng được khi thanh CHIÊU đầy)
 - **Đổi cầu thủ điều khiển:** Tab (hệ thống cũng tự chuyển sang cầu thủ gần
   bóng nhất khi cần, giống các game bóng đá thật)
+
+**Điện thoại/máy tính bảng:** game chỉ chơi được ở chế độ **ngang màn hình**
+— nếu đang cầm dọc máy, một màn hình sẽ nhắc xoay ngang trước khi vào trận.
+Điều khiển bằng joystick ảo (góc dưới trái) để di chuyển, và 4 nút chạm ở
+góc dưới phải: ĐỔI (đổi cầu thủ), CHUYỀN, CHIÊU (tuyệt kỹ), SÚT.
 
 Chọn 1 trong 6 cao thủ Thiếu Lâm để dẫn dắt đội của bạn, mỗi người có một
 tuyệt kỹ khác nhau (Hàng Long Cước, Thiết Đầu Công, Thái Cực Toàn Phong, Liệt

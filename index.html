@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Đội Bóng Thiếu Lâm Người Que 3D</title>
 <link rel="stylesheet" href="/src/style.css">
 </head>
@@ -24,7 +24,8 @@
     <div class="meter-row">
       <div class="meter" id="meter1"><div class="meter-fill" id="meter1-fill"></div><span class="meter-label">CHIÊU</span></div>
     </div>
-    <div class="switch-hint">TAB đổi cầu thủ · WASD di chuyển · Space sút · Shift chuyền · F xuất chiêu</div>
+    <div class="switch-hint kb-only">TAB đổi cầu thủ · WASD di chuyển · Space sút · Shift chuyền · F xuất chiêu</div>
+    <div class="switch-hint touch-only hidden">Joystick di chuyển · nút phải: ĐỔI / CHUYỀN / CHIÊU / SÚT</div>
   </div>
 
   <div id="goal-banner" class="hidden">VÀO!!!</div>
@@ -33,8 +34,11 @@
     <h1>ĐỘI BÓNG THIẾU LÂM<br><span class="sub">NGƯỜI QUE 3D</span></h1>
     <p class="tagline">Cả đội xuất trận — luyện thành tuyệt kỹ, chinh phục sân cỏ!</p>
     <button id="btn-to-select" class="primary-btn">TIẾP TỤC</button>
-    <div class="controls-hint">
+    <div class="controls-hint kb-only">
       <div><b>Di chuyển:</b> W/A/S/D &nbsp; <b>Sút:</b> Space &nbsp; <b>Chuyền:</b> Shift &nbsp; <b>Chiêu:</b> F &nbsp; <b>Đổi người:</b> Tab</div>
+    </div>
+    <div class="controls-hint touch-only hidden">
+      <div>Kéo joystick trái để di chuyển · chạm nút phải để ĐỔI người, CHUYỀN, xuất CHIÊU, hoặc SÚT</div>
     </div>
   </div>
 
@@ -48,6 +52,23 @@
     <h2 id="gameover-title">TRẬN ĐẤU KẾT THÚC</h2>
     <p id="gameover-sub"></p>
     <button id="btn-restart" class="primary-btn">CHƠI LẠI</button>
+  </div>
+
+  <div id="touch-controls" class="hidden">
+    <div id="touch-joystick">
+      <div id="touch-joystick-knob"></div>
+    </div>
+    <div id="touch-buttons">
+      <button id="btn-switch" class="touch-btn touch-btn-small" data-key="tab">ĐỔI</button>
+      <button id="btn-pass" class="touch-btn touch-btn-mid" data-key="shift">CHUYỀN</button>
+      <button id="btn-skill" class="touch-btn touch-btn-mid touch-btn-skill" data-key="f">CHIÊU</button>
+      <button id="btn-shoot" class="touch-btn touch-btn-big" data-key=" ">SÚT</button>
+    </div>
+  </div>
+
+  <div id="rotate-overlay" class="hidden">
+    <div class="rotate-icon">📱</div>
+    <p>Xoay ngang màn hình để chơi</p>
   </div>
 </div>
 <script type="module" src="/src/main.js"></script>
