@@ -2,13 +2,15 @@ import * as THREE from 'three';
 import { Player } from './Player.js';
 import { FIELD_LENGTH } from './constants.js';
 
-// Diamond-ish 1-1-2-1 shape (index 0 is always the goalkeeper).
+// Diamond-ish 1-1-2-1 shape (index 0 is always the goalkeeper). Midfielders
+// sit wide so the team actually spreads across the pitch instead of
+// clustering down the centre line.
 const BASE_SLOTS = [
   { x: 0, z: -FIELD_LENGTH / 2 + 2.2, role: 'GK' },
-  { x: 0, z: -FIELD_LENGTH * 0.22, role: 'FIELD' },
-  { x: -6.5, z: -FIELD_LENGTH * 0.05, role: 'FIELD' },
-  { x: 6.5, z: -FIELD_LENGTH * 0.05, role: 'FIELD' },
-  { x: 0, z: FIELD_LENGTH * 0.22, role: 'FIELD' },
+  { x: 0, z: -FIELD_LENGTH * 0.24, role: 'FIELD' },
+  { x: -9.5, z: -FIELD_LENGTH * 0.02, role: 'FIELD' },
+  { x: 9.5, z: -FIELD_LENGTH * 0.02, role: 'FIELD' },
+  { x: 0, z: FIELD_LENGTH * 0.24, role: 'FIELD' },
 ];
 
 export class Team {

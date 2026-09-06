@@ -55,6 +55,9 @@ export class Ball {
     this.lastTouch = null; // { player, team }
     this.groundHits = 0;
     this.trailTimer = 0;
+    this.kickLock = 0; // brief window after a kick where dribble-assist won't grab the ball
+    this.intendedReceiver = null; // player a pass is aimed at, so they run onto it
+    this.receiverTimer = 0;
   }
 
   get position() { return this.mesh.position; }
@@ -65,6 +68,9 @@ export class Ball {
     this.special = null;
     this.lastTouch = null;
     this.groundHits = 0;
+    this.kickLock = 0;
+    this.intendedReceiver = null;
+    this.receiverTimer = 0;
   }
 
   isGrounded() {
@@ -74,6 +80,12 @@ export class Ball {
   update(dt, particles) {
     const p = this.mesh.position;
     const v = this.velocity;
+
+    if (this.kickLock > 0) this.kickLock -= dt;
+    if (this.intendedReceiver) {
+      this.receiverTimer -= dt;
+      if (this.receiverTimer <= 0) this.intendedReceiver = null;
+    }
 
     if (this.special) {
       this.updateSpecial(dt, particles);

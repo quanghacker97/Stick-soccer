@@ -151,6 +151,8 @@ export class Game {
       if (mate) {
         const dir = new THREE.Vector3(mate.position.x - p.position.x, 0, mate.position.z - p.position.z).normalize();
         doNormalKick(p, this.ball, dir, 11.5, 2.2, this.particles);
+        this.ball.intendedReceiver = mate;
+        this.ball.receiverTimer = 3;
       } else {
         doNormalKick(p, this.ball, facing, 9, 1.6, this.particles);
       }
@@ -159,9 +161,10 @@ export class Game {
     }
   }
 
-  resolveBallPlayerCollisions() {
+  resolveBallPlayerCollisions(owner) {
     const all = [...this.teamA.players, ...this.teamB.players];
     for (const p of all) {
+      if (p === owner) continue;
       _diff.copy(this.ball.position).sub(p.position);
       const flatDist = Math.hypot(_diff.x, _diff.z);
       const minDist = PLAYER_RADIUS + BALL_RADIUS + 0.15;
@@ -177,6 +180,33 @@ export class Game {
         }
       }
     }
+  }
+
+  // The player considered to be "carrying" the ball right now — a loose,
+  // slow-moving ball near someone's feet, as opposed to a shot/pass in flight.
+  findBallOwner() {
+    if (this.ball.kickLock > 0) return null;
+    const speed = Math.hypot(this.ball.velocity.x, this.ball.velocity.z);
+    if (speed > 7 || this.ball.position.y > 1.2) return null;
+    let owner = null, bestDist = 0.95;
+    for (const p of [...this.teamA.players, ...this.teamB.players]) {
+      const d = Math.hypot(this.ball.position.x - p.position.x, this.ball.position.z - p.position.z);
+      if (d < bestDist) { bestDist = d; owner = p; }
+    }
+    return owner;
+  }
+
+  applyDribbleControl(owner, dt) {
+    const fwd = owner.forwardVector(_dir);
+    const aheadDist = 0.55 + Math.min(0.35, owner.speed * 0.05);
+    const desiredX = owner.position.x + fwd.x * aheadDist;
+    const desiredZ = owner.position.z + fwd.z * aheadDist;
+    const pull = Math.min(1, dt * 9);
+    this.ball.position.x += (desiredX - this.ball.position.x) * pull;
+    this.ball.position.z += (desiredZ - this.ball.position.z) * pull;
+    this.ball.velocity.x += (owner.velocity.x - this.ball.velocity.x) * pull;
+    this.ball.velocity.z += (owner.velocity.z - this.ball.velocity.z) * pull;
+    if (this.ball.position.y > BALL_RADIUS + 0.05) this.ball.velocity.y -= 9 * dt;
   }
 
   resolvePlayerPlayerCollisions() {
@@ -254,7 +284,9 @@ export class Game {
     this.resolvePlayerPlayerCollisions();
 
     this.ball.update(dt, this.particles);
-    this.resolveBallPlayerCollisions();
+    const owner = this.findBallOwner();
+    this.resolveBallPlayerCollisions(owner);
+    if (owner) this.applyDribbleControl(owner, dt);
     this.checkGoals();
 
     this.matchTime -= dt;

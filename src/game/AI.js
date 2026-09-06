@@ -12,11 +12,18 @@ function distXZ(a, b) {
 
 export function updateTeamAI(team, ball, { controlledPlayer, particles }) {
   const outfield = team.players.filter((p) => p.role !== 'GK');
-  let chaser = outfield[0];
-  let bestDist = Infinity;
-  for (const p of outfield) {
-    const d = distXZ(p.position, ball.position);
-    if (d < bestDist) { bestDist = d; chaser = p; }
+  let chaser;
+  if (ball.intendedReceiver && outfield.includes(ball.intendedReceiver)) {
+    // a teammate just passed to this player — they alone should run onto it,
+    // everyone else holds shape instead of also converging on the ball.
+    chaser = ball.intendedReceiver;
+  } else {
+    chaser = outfield[0];
+    let bestDist = Infinity;
+    for (const p of outfield) {
+      const d = distXZ(p.position, ball.position);
+      if (d < bestDist) { bestDist = d; chaser = p; }
+    }
   }
 
   for (const player of team.players) {
@@ -102,6 +109,8 @@ function chaserAI(player, team, ball, particles) {
   if (mate && Math.random() < 0.55) {
     const dir = new THREE.Vector3(mate.position.x - player.position.x, 0, mate.position.z - player.position.z).normalize();
     doNormalKick(player, ball, dir, 11.5, 2.2, particles);
+    ball.intendedReceiver = mate;
+    ball.receiverTimer = 3;
     return;
   }
 
@@ -112,18 +121,24 @@ function chaserAI(player, team, ball, particles) {
 }
 
 function supportAI(player, team, ball) {
-  const shift = 0.35;
+  // Keep a disciplined shape: drift toward the ball's side a little rather
+  // than everyone collapsing onto it, and stay within a bounded distance of
+  // this player's own formation slot so lines (defense/mid/attack) hold up.
+  const shiftX = 0.22;
+  const shiftZ = 0.16;
+  const maxDrift = 7;
   const targetX = THREE.MathUtils.clamp(
-    player.formationSlot.x + (ball.position.x - player.formationSlot.x) * shift,
+    player.formationSlot.x + (ball.position.x - player.formationSlot.x) * shiftX,
     -FIELD_WIDTH / 2 + 1.5, FIELD_WIDTH / 2 - 1.5,
   );
-  const targetZ = player.formationSlot.y + (ball.position.z - player.formationSlot.y) * shift * 0.7;
+  const zDrift = THREE.MathUtils.clamp((ball.position.z - player.formationSlot.y) * shiftZ, -maxDrift, maxDrift);
+  const targetZ = player.formationSlot.y + zDrift;
   _target.set(targetX, 0, targetZ);
 
   const toTarget = _v.set(_target.x - player.position.x, 0, _target.z - player.position.z);
   const dist = toTarget.length();
   if (dist > 0.4) {
-    player.desiredDir.copy(toTarget.normalize().multiplyScalar(Math.min(0.7, dist / 3)));
+    player.desiredDir.copy(toTarget.normalize().multiplyScalar(Math.min(0.65, dist / 3)));
     player.faceToward(_target);
   } else {
     player.desiredDir.set(0, 0, 0);

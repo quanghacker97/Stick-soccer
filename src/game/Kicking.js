@@ -12,6 +12,8 @@ export function canKick(player, ball) {
 
 export function doNormalKick(player, ball, dir, power, lift, particles) {
   ball.lastTouch = { player, team: player.team };
+  ball.intendedReceiver = null;
+  ball.kickLock = 0.15;
   applyNormalKick(ball, dir, power, lift);
   player.kickAnim = 0.32;
   player.kickCooldown = 0.4;
@@ -21,6 +23,8 @@ export function doNormalKick(player, ball, dir, power, lift, particles) {
 
 export function doSpecialKick(player, ball, dir, particles) {
   ball.lastTouch = { player, team: player.team };
+  ball.intendedReceiver = null;
+  ball.kickLock = 0.15;
   applySpecialKick(ball, dir, player.char.special, particles, player.char.trail);
   player.kickAnim = 0.32;
   player.kickCooldown = 0.5;
