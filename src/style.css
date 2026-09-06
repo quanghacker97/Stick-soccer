@@ -133,6 +133,28 @@ canvas#game {
   text-align: center;
   padding: 20px;
   z-index: 10;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* On short viewports (landscape phones) centered content can overflow above
+   the visible area and become unreachable — fall back to top-aligned +
+   scrollable instead of vertical centering. */
+@media (max-height: 560px) {
+  .overlay {
+    justify-content: flex-start;
+    padding: 14px 20px 32px;
+  }
+  .overlay h1 { font-size: 30px; margin-bottom: 2px; }
+  .overlay h1 .sub { font-size: 20px; }
+  .overlay h2 { font-size: 20px; margin-bottom: 6px; }
+  .tagline { margin: 4px 0 14px; }
+  .char-card { width: 130px; padding: 8px; }
+  .char-card .swatch { height: 50px; }
+  .controls-hint { margin-top: 12px; }
 }
 .overlay h1 {
   font-size: 46px;
